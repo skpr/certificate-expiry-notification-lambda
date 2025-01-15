@@ -5,10 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
 
@@ -17,27 +15,10 @@ import (
 	util "github.com/skpr/certificate-expiry-notification-lambda/internal/utils"
 )
 
-var (
-	today      = time.Now().UTC()
-	expiryDays = getExpiryDays()
-)
-
 const (
-	// EventDetailType is the type of event we are looking for.
+	// EventDetailType is the type of event we are looking for in the payload.
 	EventDetailType = "ACM Certificate Approaching Expiration"
 )
-
-func getExpiryDays() int {
-	if os.Getenv("EXPIRY_DAYS") == "" {
-		return 45
-	}
-	days, err := strconv.Atoi(os.Getenv("EXPIRY_DAYS"))
-	if err != nil {
-		return 45
-	}
-
-	return days
-}
 
 func main() {
 	lambda.Start(lambdaHandler)
@@ -68,12 +49,6 @@ func lambdaHandler(_ context.Context, rawEvent json.RawMessage) error {
 		return fmt.Errorf("failed to create Slack client: %w", err)
 	}
 
-	if err != nil {
-		fmt.Println("Couldn't load configuration. Have you set up your AWS account?")
-		fmt.Println(err)
-		return err
-	}
-
 	err = handleCert(event, slackClient)
 	if err != nil {
 		return err
@@ -91,16 +66,14 @@ func handleCert(event acm.Event, slackClient slack.ClientInterface) error {
 }
 
 func postNotification(slackClient slack.ClientInterface, event acm.Event) error {
-	if event.Detail.DaysToExpiry <= expiryDays {
-		err := slackClient.PostMessage(slack.PostMessageParams{
-			Domain:         event.Detail.CommonName,
-			CertificateArn: event.Resources[0],
-			Expiry:         strconv.Itoa(event.Detail.DaysToExpiry),
-			Description:    "The above certificate is expiring within 45 days.",
-		})
-		if err != nil {
-			return fmt.Errorf("failed to post Slack message: %w", err)
-		}
+	err := slackClient.PostMessage(slack.PostMessageParams{
+		Domain:         event.Detail.CommonName,
+		CertificateArn: event.Resources[0],
+		Expiry:         strconv.Itoa(event.Detail.DaysToExpiry),
+		Description:    "The above certificate is expiring within 45 days.",
+	})
+	if err != nil {
+		return fmt.Errorf("failed to post Slack message: %w", err)
 	}
 	return nil
 }

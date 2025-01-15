@@ -25,7 +25,7 @@ func (p PostMessageParams) Validate() error {
 	var errs []error
 
 	if p.Domain == "" {
-		errs = append(errs, fmt.Errorf("certificate is required"))
+		errs = append(errs, fmt.Errorf("domain is required"))
 	}
 
 	if p.CertificateArn == "" {
@@ -55,20 +55,20 @@ func (c *Client) PostMessage(params PostMessageParams) error {
 		Type: BlockTypeContext,
 	}
 
-	context.Elements = append(context.Elements, BlockContextElement{
-		Type: BlockElementTypeMarkdown,
-		Text: fmt.Sprintf("*Domain* = %s", params.Domain),
-	})
-
-	context.Elements = append(context.Elements, BlockContextElement{
-		Type: BlockElementTypeMarkdown,
-		Text: fmt.Sprintf("*CertificateArn* = %s", params.CertificateArn),
-	})
-
-	context.Elements = append(context.Elements, BlockContextElement{
-		Type: BlockElementTypeMarkdown,
-		Text: fmt.Sprintf("*Expiry Within* = %s", params.Expiry),
-	})
+	context.Elements = []BlockContextElement{
+		{
+			Type: BlockElementTypeMarkdown,
+			Text: fmt.Sprintf("*Domain* = %s", params.Domain),
+		},
+		{
+			Type: BlockElementTypeMarkdown,
+			Text: fmt.Sprintf("*CertificateArn* = %s", params.CertificateArn),
+		},
+		{
+			Type: BlockElementTypeMarkdown,
+			Text: fmt.Sprintf("*Expiry Within* = %s", params.Expiry),
+		},
+	}
 
 	message.Blocks = append(message.Blocks, context)
 

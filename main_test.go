@@ -6,10 +6,11 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/skpr/certificate-expiry-notification-lambda/internal/acm"
 	"github.com/skpr/certificate-expiry-notification-lambda/internal/slack"
 	util "github.com/skpr/certificate-expiry-notification-lambda/internal/utils"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestHandleCert(t *testing.T) {
@@ -34,7 +35,6 @@ func TestHandleCert(t *testing.T) {
 		fmt.Println(err)
 	}
 
-	// os.Setenv("SLACK_WEBHOOK_URL", "")
 	os.Setenv("SLACK_WEBHOOK_URL", "https://hooks.slack.com/")
 
 	fmt.Printf("Event: %v\n", len(event.Resources))
@@ -50,8 +50,6 @@ func TestHandleCert(t *testing.T) {
 			fmt.Println(e)
 		}
 	}
-	// slackClient, err := slack.NewClient(config.SlackWebhookURL)
-	// assert.NoError(t, err)
 
 	slackMock := &slack.MockClient{}
 
