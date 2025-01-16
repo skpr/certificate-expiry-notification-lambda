@@ -31,7 +31,7 @@ func lambdaHandler(_ context.Context, rawEvent json.RawMessage) error {
 		return fmt.Errorf("failed to unmarshal event: %w", err)
 	}
 
-	if event.DetailType != EventDetailType || len(event.Resources) > 0 {
+	if event.DetailType != EventDetailType {
 		return fmt.Errorf("event type not supported")
 	}
 
